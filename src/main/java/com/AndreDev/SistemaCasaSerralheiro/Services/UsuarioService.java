@@ -2,12 +2,15 @@ package com.AndreDev.SistemaCasaSerralheiro.Services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.AndreDev.SistemaCasaSerralheiro.domain.Usuario;
+import com.AndreDev.SistemaCasaSerralheiro.domain.DTOs.UsuarioDTO;
 import com.AndreDev.SistemaCasaSerralheiro.repositories.UsuarioRepository;
 import com.AndreDev.SistemaCasaSerralheiro.Services.exceptions.ResourceNotFoundException;
 
@@ -16,6 +19,9 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository repository;
+
+    @Autowired
+    private BCryptPasswordEncoder encoder;
 
     @Transactional(readOnly = true)
     public Usuario findById(Long id) {
@@ -26,6 +32,26 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public List<Usuario> findAll() {
         return repository.findAll();
+    }
+
+    @Transactional
+    public UsuarioDTO insertDTO(UsuarioDTO objDTO) {
+       
+    	objDTO.setSenha(encoder.encode(objDTO.getSenha()));
+    	Usuario obj = new Usuario(null, objDTO.getNome(), objDTO.getLogin(), objDTO.getSenha(), objDTO.getFuncoes());
+
+        obj = insert(obj);
+        return new UsuarioDTO(obj);
+    }
+
+    @Transactional
+    public UsuarioDTO updateDTO(Long id, UsuarioDTO objDTO) {
+    	
+    	objDTO.setSenha(encoder.encode(objDTO.getSenha()));
+    	Usuario obj = new Usuario(id, objDTO.getNome(), objDTO.getLogin(), objDTO.getSenha(), objDTO.getFuncoes());
+
+        obj = update(id, obj);
+        return new UsuarioDTO(obj);
     }
 
     @Transactional
@@ -56,6 +82,6 @@ public class UsuarioService {
         entity.setNome(obj.getNome());
         entity.setLogin(obj.getLogin());
         entity.setSenha(obj.getSenha());
-        entity.setFuncao(obj.getFuncao());
+        obj.getFuncoes().forEach(funcao -> entity.addFuncao(funcao));
     }
 }

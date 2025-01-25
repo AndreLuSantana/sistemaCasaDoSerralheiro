@@ -4,6 +4,9 @@ import com.AndreDev.SistemaCasaSerralheiro.domain.Usuario;
 import com.AndreDev.SistemaCasaSerralheiro.domain.enums.Funcao;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class UsuarioDTO implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -11,7 +14,8 @@ public class UsuarioDTO implements Serializable {
     private Long id;
     private String nome;
     private String login;
-    private Funcao funcao;
+    private String senha;
+    private Set<Integer> funcoes = new HashSet<>();
 
     public UsuarioDTO() {
     }
@@ -20,7 +24,8 @@ public class UsuarioDTO implements Serializable {
         this.id = obj.getId();
         this.nome = obj.getNome();
         this.login = obj.getLogin();
-        this.funcao = obj.getFuncao();
+        this.senha = obj.getSenha();
+        this.funcoes = obj.getFuncoes().stream().map(x -> x.getCodigo()).collect(Collectors.toSet());
     }
 
     // Getters e Setters
@@ -48,16 +53,24 @@ public class UsuarioDTO implements Serializable {
         this.login = login;
     }
 
-    public Funcao getFuncao() {
-        return funcao;
+    public String getSenha() {
+        return senha;
     }
 
-    public void setFuncao(Funcao funcao) {
-        this.funcao = funcao;
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
+
+    public Set<Funcao> getFuncoes() {
+        return funcoes.stream().map(Funcao::valueOf).collect(Collectors.toSet());
+    }
+
+    public void addPerfil(Funcao funcao) {
+		this.funcoes.add(funcao.getCodigo());
+	}
 
     // Método para converter DTO para entidade
     public Usuario toEntity() {
-        return new Usuario(id, nome, login, null, funcao);
+        return new Usuario(id, nome, login, senha, getFuncoes());
     }
 }

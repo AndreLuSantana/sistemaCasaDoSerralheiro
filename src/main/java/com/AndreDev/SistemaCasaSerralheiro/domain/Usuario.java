@@ -3,6 +3,9 @@ package com.AndreDev.SistemaCasaSerralheiro.domain;
 import com.AndreDev.SistemaCasaSerralheiro.domain.enums.Funcao;
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Objects;
 
 @Entity
@@ -23,20 +26,20 @@ public class Usuario implements Serializable {
     @Column(nullable = false)
     private String senha;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Funcao funcao;
+    @ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable (name = "FUNCOES")//Cria uma tabea com a coleção chama PERFIS
+    private Set<Integer> funcoes = new HashSet<>();
 
     // Construtores
     public Usuario() {
     }
 
-    public Usuario(Long id, String nome, String login, String senha, Funcao funcao) {
+    public Usuario(Long id, String nome, String login, String senha, Set<Funcao> funcao) {
         this.id = id;
         this.nome = nome;
         this.login = login;
         this.senha = senha;
-        this.funcao = funcao;
+        this.funcoes = funcao.stream().map(x -> x.getCodigo()).collect(Collectors.toSet());
     }
 
     // Getters e Setters
@@ -72,12 +75,12 @@ public class Usuario implements Serializable {
         this.senha = senha;
     }
 
-    public Funcao getFuncao() {
-        return funcao;
+    public Set<Funcao> getFuncoes() {
+        return funcoes.stream().map(Funcao::valueOf).collect(Collectors.toSet());
     }
 
-    public void setFuncao(Funcao funcao) {
-        this.funcao = funcao;
+    public void addFuncao(Funcao funcao) {
+        this.funcoes.add(funcao.getCodigo());
     }
 
     // HashCode e Equals
@@ -101,7 +104,7 @@ public class Usuario implements Serializable {
                 "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", login='" + login + '\'' +
-                ", funcao=" + funcao +
+                ", funcao=" + funcoes +
                 '}';
     }
 }
